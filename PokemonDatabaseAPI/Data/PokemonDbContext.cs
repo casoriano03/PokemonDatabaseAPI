@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using PokemonDatabaseAPI.Interfaces;
 using PokemonDatabaseAPI.Model;
 
@@ -28,7 +29,13 @@ namespace PokemonDatabaseAPI.Data
             modelBuilder.Entity<PokemonType2>()
                 .HasIndex(p=>p.TypeName)
                 .IsUnique();
-                
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.UserName)
+                .IsUnique();
+            
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<PokemonAbility>().HasData(
@@ -85,5 +92,6 @@ namespace PokemonDatabaseAPI.Data
         public DbSet<PokemonType1> PokemonTypes1 { get; set; }
         public DbSet<PokemonType2> PokemonTypes2 { get; set; }
         public DbSet<PokemonAbility> PokemonAbilities { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

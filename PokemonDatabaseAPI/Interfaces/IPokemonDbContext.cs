@@ -10,5 +10,6 @@ public interface IPokemonDbContext
     DbSet<PokemonType1> PokemonTypes1 { get; set; }
     DbSet<PokemonType2> PokemonTypes2 { get; set; }
     DbSet<PokemonAbility> PokemonAbilities { get; set; }
+    DbSet<User> Users { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

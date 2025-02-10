@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PokemonDatabaseAPI.Data;
@@ -9,33 +10,27 @@ namespace PokemonDatabaseAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PokemonAbilityController : ControllerBase
+    public class PokemonAbilityController(IPokemonDbContext pokemonDbContext) : ControllerBase
     {
-        private readonly IPokemonDbContext _pokemonDbContext;
-
-        public PokemonAbilityController(IPokemonDbContext pokemonDbContext)
-        {
-            _pokemonDbContext = pokemonDbContext;
-        }
-
-        [HttpGet]
+        [HttpGet("GetAllPokemonAbilities")]
         public async Task<IActionResult> GetAllPokemonAbilities()
         {
-            var pokemonAblities = await _pokemonDbContext.PokemonAbilities.ToListAsync();
-            return Ok(pokemonAblities);
+            var pokemonAbilities = await pokemonDbContext.PokemonAbilities.ToListAsync();
+            return Ok(pokemonAbilities);
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("GetPokemonAbility")]
         public async Task<IActionResult> GetPokemonAbility(int id)
         {
-            var pokemonAbility = await _pokemonDbContext.PokemonAbilities.FindAsync(id);
+            var pokemonAbility = await pokemonDbContext.PokemonAbilities.FindAsync(id);
             if (pokemonAbility == null) return BadRequest("No ability found with the id provided.");
                 
 
             return Ok(pokemonAbility);
         }
 
-        [HttpPost("{abilityName}")]
+        [Authorize(Roles = "Admin")]
+        [HttpPost("AddPokemonAbility")]
         public async Task<IActionResult> AddPokemonAbility(string abilityName)
         {
             if (string.IsNullOrEmpty(abilityName)) return BadRequest("Ability name cannot be empty.");
@@ -45,30 +40,32 @@ namespace PokemonDatabaseAPI.Controllers
                 AbilityName = abilityName
             };
 
-            await _pokemonDbContext.PokemonAbilities.AddAsync(newAbility);
-            await _pokemonDbContext.SaveChangesAsync();
+            await pokemonDbContext.PokemonAbilities.AddAsync(newAbility);
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"Ability {abilityName} has been successfully added.");
         }
 
-        [HttpPut("{id:int}/{newAbilityName}")]
+        [Authorize(Roles = "Admin")]
+        [HttpPut("EditPokemonAbility")]
         public async Task<IActionResult> EditPokemonAbility(int id, string newAbilityName)
         {
-            var pokemonAbility = await _pokemonDbContext.PokemonAbilities.FindAsync(id);
+            var pokemonAbility = await pokemonDbContext.PokemonAbilities.FindAsync(id);
             if (pokemonAbility == null) return BadRequest("No ability found with the id provided.");
             if (string.IsNullOrEmpty(newAbilityName)) return BadRequest("New Ability name cannot be empty.");
 
             pokemonAbility.AbilityName = newAbilityName;
-            await _pokemonDbContext.SaveChangesAsync();
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"Success! Ability with id {id} has changed to {newAbilityName}");
         }
 
-        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("DeletePokemonAbility")]
         public async Task<IActionResult> DeletePokemonAbility(int id)
         {
-            var pokemonAbility = await _pokemonDbContext.PokemonAbilities.FindAsync(id);
+            var pokemonAbility = await pokemonDbContext.PokemonAbilities.FindAsync(id);
             if (pokemonAbility == null) return BadRequest("No ability found with the id provided.");
-            _pokemonDbContext.PokemonAbilities.Remove(pokemonAbility);
-            await _pokemonDbContext.SaveChangesAsync();
+            pokemonDbContext.PokemonAbilities.Remove(pokemonAbility);
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"Pokemon Ability with id {id} has been deleted");
         }
     }

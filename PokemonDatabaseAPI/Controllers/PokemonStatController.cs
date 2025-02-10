@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PokemonDatabaseAPI.Interfaces;
@@ -9,31 +10,26 @@ namespace PokemonDatabaseAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PokemonStatController : ControllerBase
+    public class PokemonStatController(IPokemonDbContext pokemonDbContext) : ControllerBase
     {
-        private readonly IPokemonDbContext _pokemonDbContext;
-
-        public PokemonStatController(IPokemonDbContext pokemonDbContext)
-        {
-            _pokemonDbContext = pokemonDbContext;
-        }
-
-        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        [HttpGet("GetAllPokemonStats")]
         public async Task<IActionResult> GetAllPokemonStats()
         {
-            var stats = await _pokemonDbContext.PokemonStats.ToListAsync();
+            var stats = await pokemonDbContext.PokemonStats.ToListAsync();
             return Ok(stats);
         }
 
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetPokemonStat(int id)
+        [HttpGet("GetPokemonStat")]
+        public async Task<IActionResult> GetPokemonStat(int pokemonId)
         {
-            var stat = await _pokemonDbContext.PokemonStats.FindAsync(id);
-            if (stat == null) return BadRequest("No Stat found with the id provided.");
+            var stat = await pokemonDbContext.PokemonStats.FirstOrDefaultAsync((p)=>p.PokemonId == pokemonId);
+            //if (stat == null) return BadRequest("No Stat found with the Pokemon Id provided.");
             return Ok(stat);
         }
 
-        [HttpPost("{PokemonStatsDto}")]
+        [Authorize(Roles = "Admin")]
+        [HttpPost("AddPokemonStat")]
         public async Task<IActionResult> AddPokemonStat(PokemonStatsDto pokemonStatsDto)
         {
             var newStat = new PokemonStats()
@@ -47,15 +43,16 @@ namespace PokemonDatabaseAPI.Controllers
                 PokemonId = pokemonStatsDto.PokemonId,
             };
 
-            await _pokemonDbContext.PokemonStats.AddAsync(newStat);
-            await _pokemonDbContext.SaveChangesAsync();
+            await pokemonDbContext.PokemonStats.AddAsync(newStat);
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"Stats for Pokemon with Id {pokemonStatsDto.PokemonId} has been added.");
         }
 
-        [HttpPut("{id:int},{PokemonStatsDto}")]
+        [Authorize(Roles = "Admin")]
+        [HttpPut("EditPokemonStat")]
         public async Task<IActionResult> EditPokemonStat(int id, PokemonStatsDto pokemonStatsDto)
         {
-            var stat = await _pokemonDbContext.PokemonStats.FindAsync(id);
+            var stat = await pokemonDbContext.PokemonStats.FindAsync(id);
             if (stat == null) return BadRequest("No Stat found with the id provided.");
             
             stat.Hp = pokemonStatsDto.Hp;
@@ -65,17 +62,18 @@ namespace PokemonDatabaseAPI.Controllers
             stat.SAtk = pokemonStatsDto.SAtk;
             stat.SDef = pokemonStatsDto.SDef;
 
-            await _pokemonDbContext.SaveChangesAsync();
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"Stats for Pokemon with Id {pokemonStatsDto.PokemonId} has been updated");
         }
 
-        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("DeletePokemonStat")]
         public async Task<IActionResult> DeletePokemonStat(int id)
         {
-            var stat = await _pokemonDbContext.PokemonStats.FindAsync(id);
+            var stat = await pokemonDbContext.PokemonStats.FindAsync(id);
             if (stat == null) return BadRequest("No Stat found with the id provided.");
-            _pokemonDbContext.PokemonStats.Remove(stat);
-            await _pokemonDbContext.SaveChangesAsync();
+            pokemonDbContext.PokemonStats.Remove(stat);
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"Stats for Pokemon Id {stat.PokemonId} has been deleted.");
         }
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PokemonDatabaseAPI.Data;
@@ -10,41 +11,34 @@ namespace PokemonDatabaseAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PokemonController : ControllerBase
+    public class PokemonController(IPokemonDbContext pokemonDbContext) : ControllerBase
     {
-        private readonly IPokemonDbContext _pokemonDbContext;
-
-        public PokemonController(IPokemonDbContext pokemonDbContext)
-        {
-            _pokemonDbContext = pokemonDbContext;
-        }
-
-        [HttpGet]
+        [HttpGet("GetAllPokemons")]
         public async Task<IActionResult> GetAllPokemons()
         {
-            return Ok(await _pokemonDbContext.Pokemons
-                .Include(p=>p.PokemonStats)
+            return Ok(await pokemonDbContext.Pokemons
                 .Include(p => p.PokemonAbility)
                 .Include(p=> p.PokemonType1)
                 .Include(p=> p.PokemonType2)
                 .ToListAsync());
         }
 
-        [HttpGet("{id:int}")]
+        [HttpGet("GetPokemon")]
         public async Task<IActionResult> GetPokemon(int id)
         {
-            var pokemon = await _pokemonDbContext.Pokemons
-                .Include(p=>p.PokemonStats)
+            var pokemon = await pokemonDbContext.Pokemons
+                //.Include(p=>p.PokemonStats)
                 .Include(p=> p.PokemonAbility)
                 .Include(p=>p.PokemonType1)
                 .Include(p=>p.PokemonType2)
                 .FirstOrDefaultAsync(p=>p.Id == id);
-            if (pokemon == null) return BadRequest("No ability found with the id provided.");
+            if (pokemon == null) return BadRequest("No pokemon found with the id provided.");
 
             return Ok(pokemon);
         }
 
-        [HttpPost("{addPokemonDto}")]
+        [Authorize(Roles = "Admin")]
+        [HttpPost("AddPokemon")]
         public async Task<IActionResult> AddPokemon(PokemonDto addPokemonDto)
         {
             var newPokemon = new Pokemon
@@ -58,15 +52,16 @@ namespace PokemonDatabaseAPI.Controllers
                 PokemonType2Id = addPokemonDto.PokemonType2Id
             };
 
-            await _pokemonDbContext.Pokemons.AddAsync(newPokemon);
-            await _pokemonDbContext.SaveChangesAsync();
+            await pokemonDbContext.Pokemons.AddAsync(newPokemon);
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"New pokemon {addPokemonDto.PokemonName} has added successfully.");
         }
 
-        [HttpPut("{id:int}/{editPokemonDto}")]
+        [Authorize(Roles = "Admin")]
+        [HttpPut("EditPokemon")]
         public async Task<IActionResult> EditPokemon(int id, PokemonDto editPokemonDto)
         {
-            var pokemon = await _pokemonDbContext.Pokemons.FindAsync(id);
+            var pokemon = await pokemonDbContext.Pokemons.FindAsync(id);
             if (pokemon == null) return BadRequest("No pokemon found with the id provided.");
 
             pokemon.PokedexEntryNumber = editPokemonDto.PokedexEntryNumber;
@@ -77,18 +72,19 @@ namespace PokemonDatabaseAPI.Controllers
             pokemon.PokemonType1Id = editPokemonDto.PokemonType1Id;
             pokemon.PokemonType2Id = editPokemonDto.PokemonType2Id;
 
-            await _pokemonDbContext.SaveChangesAsync();
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"Pokemon with id number {id} has been updated.");
         }
 
-        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("DeletePokemon")]
         public async Task<IActionResult> DeletePokemon(int id)
         {
-            var pokemon = await _pokemonDbContext.Pokemons.FindAsync(id);
+            var pokemon = await pokemonDbContext.Pokemons.FindAsync(id);
             if (pokemon == null) return BadRequest("No pokemon found with the id provided.");
 
-            _pokemonDbContext.Pokemons.Remove(pokemon);
-            await _pokemonDbContext.SaveChangesAsync();
+            pokemonDbContext.Pokemons.Remove(pokemon);
+            await pokemonDbContext.SaveChangesAsync();
             return Ok($"Pokemon with id {id} has been deleted.");
         }
     }

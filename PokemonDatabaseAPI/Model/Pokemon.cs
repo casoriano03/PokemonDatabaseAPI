@@ -13,7 +13,7 @@ namespace PokemonDatabaseAPI.Model
         public required string PokemonDescription { get; set; }
         [StringLength(100, MinimumLength = 10, ErrorMessage = "Pokemon Image Link must be between 10 and 100 characters")]
         public required string PokemonImgLink { get; set; }
-        public PokemonStats? PokemonStats { get; set; }
+        //public PokemonStats? PokemonStats { get; set; }
         [Range(1, 350, ErrorMessage = "Pokemon Ability Id must be between 1 and 350.")]
         public int? PokemonAbilityId { get; set; }
         public PokemonAbility? PokemonAbility { get; set; }
