@@ -93,7 +93,7 @@ npm run dev
 | `PUT`    | `/api/Pokemon/{id}`                      | Update Pokémon details (Admin)   |
 | `DELETE` | `/api/Pokemon/{id}`                      | Delete Pokémon (Admin)           |
 | `GET`    | `/api/PokemonStat/GetPokemonStat/{id}`   | Fetch a Pokémon's Stats          |
-| `POST`   | `/api/PokemonStat/GetPokemonStat`        | Fetch a Pokémon's Stats (Admin)  |
+| `POST`   | `/api/PokemonStat/GetPokemonStat`        | Add a Pokémon's Stats (Admin)    |
 | `PUT`    | `/api/PokemonStat/EditPokemonStat/{id}​`  | Update a Pokémon's Stats (Admin) |
 | `DELETE` | `/api/PokemonStat/DeletePokemonStat/{id}`| Delete a Pokémon's Stats (Admin) |
 | `POST`   | `/api/Auth/Register​`                     | Adds a new User                  |
