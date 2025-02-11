@@ -2,7 +2,7 @@
 
 ## 📌 Project Overview
 
-The **Pokémon Database** is a web application built using **C#** and **Entity Fram****ework**\*\*, designed to store, retrieve, and manage Pokémon data efficiently. The database includes detailed information about each Pokémon, such as stats, abilities, and description*s.*
+The **Pokémon Database** is a web application built using **C#** and **Entity Framework**\*\*, designed to store, retrieve, and manage Pokémon data efficiently. The database includes detailed information about each Pokémon, such as stats, abilities, and description*s.*
 
 ## 🚀 Featur*es*
 
