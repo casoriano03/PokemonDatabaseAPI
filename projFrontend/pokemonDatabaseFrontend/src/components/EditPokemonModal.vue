@@ -3,8 +3,14 @@ import axios from 'axios';
 import { ref, watch } from 'vue';
 
 const props = defineProps({
-  open: Boolean,
-  pokemon: Object,
+  open:{
+    type:Boolean,
+    default:false
+  },
+  pokemon: {
+    type:Object,
+    default:null
+  },
 });
 
 const token = sessionStorage.getItem('authToken');
